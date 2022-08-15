@@ -14,8 +14,11 @@ import pandas as pd
 import PySimpleGUI as sg
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QHeaderView,
                              QPushButton, QTableWidget, QTableWidgetItem,
-                             QVBoxLayout, QWidget,QItemDelegate,QLineEdit, QMessageBox, QAbstractItemView, QMainWindow)
+                             QVBoxLayout, QWidget,QItemDelegate,QLineEdit,QMessageBox)
 from PyQt5.QtGui import QDoubleValidator
+from Readkey1234 import ReadKey
+from Write import WriteC
+from unidecode import unidecode
 from PyQt5.QtCore import Qt
 
 class Ui_MainWindow(object):
@@ -150,9 +153,6 @@ class Ui_MainWindow(object):
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
         self.verticalLayout_4.addWidget(self.tableWidget)
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout_4.addWidget(self.pushButton)
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         self.label_4.setFrameShape(QtWidgets.QFrame.Box)
         self.label_4.setLineWidth(3)
@@ -163,8 +163,8 @@ class Ui_MainWindow(object):
         self.Button_Write.setObjectName("Button_Write")
         self.verticalLayout_4.addWidget(self.Button_Write)
         self.verticalLayout_4.setStretch(0, 10)
+        self.verticalLayout_4.setStretch(1, 1)
         self.verticalLayout_4.setStretch(2, 1)
-        self.verticalLayout_4.setStretch(3, 1)
         self.verticalLayout_2.addLayout(self.verticalLayout_4)
         self.verticalLayout_2.setStretch(0, 1)
         self.verticalLayout_2.setStretch(1, 1)
@@ -200,8 +200,11 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+
+
         self.Button_WR.clicked.connect(self.WR)
         self.Button_R.clicked.connect(self.R)
+        self.Button_Write.clicked.connect(self.GhiDuLieu)
         self.actionTi_ng_Vi_t.triggered.connect(self.set_Vi)
         self.actionEnglish.triggered.connect(self.set_En)
         self.Ename = sg.popup_get_file("Sellect file", file_types=(("Excel file","*.xlsx"),),)
@@ -210,12 +213,14 @@ class Ui_MainWindow(object):
         Sname = xl.sheet_names
         for x in Sname:
             self.comboBox.addItem(x)
-        #self.comboBox.activated.connect(self.LoadData)
-        self.comboBox.activated.connect(self.LuaCot)
-
+        self.comboBox.activated.connect(self.LoadData)
         self.Button_Find.clicked.connect(self.FindInfor)
-        self.ff = ["0101-22-3893", "4/8"]
-
+        # self.ff = ["0101-22-3893", "4/8"]
+        #self.ff = ReadKey().RKey()
+        self.ff = []
+        # self.Button_Write.clicked.connect(self.Writedata)
+        self.gg = []
+        self.DieuKien = "OFF"
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -225,13 +230,13 @@ class Ui_MainWindow(object):
         self.Button_WR.setText(_translate("MainWindow", "Chờ đọc"))
         self.Button_R.setText(_translate("MainWindow", "Đọc từng thẻ"))
         self.label_2.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600;\">Tên Sheet</span></p></body></html>"))
-        self.pushButton.setText(_translate("MainWindow", "Đồng ý"))
         self.Button_Write.setText(_translate("MainWindow", "Ghi vào thẻ"))
         self.menuC_i_t.setTitle(_translate("MainWindow", "Cài đặt"))
         self.menuNg_n_ng.setTitle(_translate("MainWindow", "Ngôn ngữ"))
         self.actionM_h_a.setText(_translate("MainWindow", "Mã hóa"))
         self.actionTi_ng_Vi_t.setText(_translate("MainWindow", "Tiếng Việt"))
         self.actionEnglish.setText(_translate("MainWindow", "English"))
+
 
     def LoadData(self):
         df = pd.read_excel(self.Ename, str(self.comboBox.currentText())) #Câu lệnh lấy tên của sheet được chọn
@@ -247,34 +252,33 @@ class Ui_MainWindow(object):
             for j in range(df.shape[1]):
                 self.tableWidget.setItem(i,j, QTableWidgetItem(str(df.iloc[i,j])))
         self.tableWidget.setColumnWidth(2, 300)
-        self.FindBox.setText("")
-        
+
+
     def WR(self):
         
         self.WR_T.setText("<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600; color:\'green\';background:\'green\'\">000</span></p></body></html>")
         self.R_T.setText("<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600; color:\'red\';background:\'red\'\">000</span></p></body></html>")
-        
-        print(self.gg)
+        self.DieuKien = "OFF"
     
     def R(self):#Tạo 1 bảng để in dữ liệu từ thẻ lên màn hình theo quy ước cho trước
         self.R_T.setText("<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600; color:\'green\';background:\'green\'\">000</span></p></body></html>")
         self.WR_T.setText("<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600; color:\'red\';background:\'red\'\">000</span></p></body></html>")
-        #aa = self.Infor = ReadKey().RKey()
-        aa = self.ff
-       
-        
-        self.Screen_1.setRowCount(4)
+        aa = ReadKey().RKey()
+        self.ff = aa
+        #print(aa)
+        # ppp = self.gg
+        self.DieuKien = "ON"
+        self.Screen_1.setRowCount(2)
         self.Screen_1.setColumnCount(2)
         self.Screen_1.setItem(0,0,QTableWidgetItem("Lớp"))
         self.Screen_1.setItem(0,1,QTableWidgetItem("Mã học sinh"))
-        self.Screen_1.setItem(1,0,QTableWidgetItem(str(aa[1])))
-        self.Screen_1.setItem(1,1,QTableWidgetItem(str(aa[0])))
-        self.Screen_1.setItem(2,0,QTableWidgetItem(""))
-        self.Screen_1.setItem(2,1,QTableWidgetItem(""))       
-        self.Screen_1.setItem(3,0,QTableWidgetItem("")) 
-        self.Screen_1.setItem(3,1,QTableWidgetItem(""))
-        
-
+        self.Screen_1.setItem(1,0,QTableWidgetItem(str(aa[0])))
+        self.Screen_1.setItem(1,1,QTableWidgetItem(str(aa[1])))
+            # self.Screen_1.setItem(2,0,QTableWidgetItem(""))
+            # self.Screen_1.setItem(2,1,QTableWidgetItem(""))
+            # self.Screen_1.setItem(3,0,QTableWidgetItem(""))
+            # self.Screen_1.setItem(3,1,QTableWidgetItem(""))
+       
     def set_Vi(self):
         self.label.setText( "<html><head/><body><p align=\"center\"><span style=\" font-size:10pt; font-weight:600;\">Cổng USB</span></p></body></html>")
         self.Button_WR.setText( "Chờ đọc")
@@ -299,22 +303,52 @@ class Ui_MainWindow(object):
         self.actionTi_ng_Vi_t.setText( "Tiếng Việt")
         self.actionEnglish.setText( "English")
 
+
     def dada(self, selected):#Kiểm tra tính đúng sai của dữ liệu trong thẻ so với bảng Excel
         # SName = self.SheetBox.text()
         df = pd.read_excel(self.Ename, str(self.comboBox.currentText()))
         aa = self.ff
-        #cc = self.mm
-        #print(self.ooo)
         a = []
-        for ix in selected.indexes():
-            a.append(df.iloc[ix.row(),ix.column()])
-        self.Screen_1.setItem(2,0,QTableWidgetItem(str(a[3])))
-        self.Screen_1.setItem(2,1,QTableWidgetItem(str(a[2])))       
-        self.Screen_1.setItem(3,0,QTableWidgetItem(str(aa[1] in a))) #Câu lệnh trả về kết quả True/False
-        self.Screen_1.setItem(3,1,QTableWidgetItem(str(aa[0] in a)))
+        try:
+            for ix in selected.indexes():
+                # print('Row: {0}, column: {1}'.format(ix.row(), ix.column()))
+                a.append(df.iloc[ix.row(),ix.column()])
+            self.Screen_1.setItem(2,0,QTableWidgetItem(str(a[3])))
+            self.Screen_1.setItem(2,1,QTableWidgetItem(str(a[2])))       
+            # self.Screen_1.setItem(3,0,QTableWidgetItem(str(aa[1] in a))) #Câu lệnh trả về kết quả True/False
+            # self.Screen_1.setItem(3,1,QTableWidgetItem(str(aa[0] in a))) 
+        
+            if self.DieuKien == "ON":
+                if aa[1] in a and aa[0] in a:
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Information)               
+                    msg.setInformativeText("Thông tin viết vào thẻ đã đúng")
+                    msg.setWindowTitle("Thông báo")
+                    retval = msg.exec_()
+                    self.DieuKien = "OFF"
+                        # QMessageBox.information(self, "Thông báo", "Dữ liệu ghi vào đã đúng")
+                        #print("True")
+                else:
+                        # print("False")
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Information)               
+                    msg.setInformativeText("Thông tin viết vào thẻ sai")
+                    msg.setWindowTitle("Thông báo")
+                    retval = msg.exec_()
+                        
+                        # QMessageBox.information(self,"Thông báo", "Dữ liệu ghi sai")
+            elif self.DieuKien == "OFF":
+                for ix in selected.indexes():
+                    a.append(df.iloc[ix.row(),ix.column()])
+                # self.Screen_1.setItem(2,0,QTableWidgetItem(str(a[3])))
+                # self.Screen_1.setItem(2,1,QTableWidgetItem(str(a[2])))       
+                # self.Screen_1.setItem(3,0,QTableWidgetItem(str(aa[1] in a))) #Câu lệnh trả về kết quả True/False
+                # self.Screen_1.setItem(3,1,QTableWidgetItem(str(aa[0] in a))) 
+        except:
+            print("Lỗi ở dada")
+        self.gg = a
 
     def FindInfor(self):
-        self.ooo = "True"
         df = pd.read_excel(self.Ename, str(self.comboBox.currentText()))
         Fi = self.FindBox.text()
         aaa = df['Họ và tên']
@@ -324,10 +358,8 @@ class Ui_MainWindow(object):
         eee = df['Dân tộc']
         fff = df['Ghi chú']
         self.tableWidget.setRowCount(0)
-        self.tableWidget.selectionModel().Clear
         if Fi in aaa.unique():
             ff = df[aaa == Fi]
-
             ff.fillna('', inplace=True)
             self.tableWidget.setRowCount(ff.shape[0])
             self.tableWidget.setColumnCount(ff.shape[1])
@@ -338,7 +370,6 @@ class Ui_MainWindow(object):
 
             self.tableWidget.setColumnWidth(2, 300)
             self.label_4.setText("")
-            self.mm = ff
         elif Fi in eee.unique():
             ff = df[eee == Fi]
             ff.fillna('', inplace=True)
@@ -350,7 +381,6 @@ class Ui_MainWindow(object):
                     self.tableWidget.setItem(i,j, QTableWidgetItem(str(ff.iloc[i,j])))
             self.tableWidget.setColumnWidth(2, 300)
             self.label_4.setText("")
-            self.mm = ff
         elif Fi in fff.unique():
             ff = df[fff == Fi]
             ff.fillna('', inplace=True)
@@ -362,7 +392,6 @@ class Ui_MainWindow(object):
                     self.tableWidget.setItem(i,j, QTableWidgetItem(str(ff.iloc[i,j])))
             self.tableWidget.setColumnWidth(2, 300)
             self.label_4.setText("")
-            self.mm = ff
         elif Fi in bbb.unique():
             ff = df[bbb == Fi]
             ff.fillna('', inplace=True)
@@ -374,7 +403,6 @@ class Ui_MainWindow(object):
                     self.tableWidget.setItem(i,j, QTableWidgetItem(str(ff.iloc[i,j])))
             self.tableWidget.setColumnWidth(2, 300)
             self.label_4.setText("")
-            self.mm = ff
         elif Fi in ccc.unique():
             ff = df[ccc == Fi]
             ff.fillna('', inplace=True)
@@ -385,11 +413,10 @@ class Ui_MainWindow(object):
                 for j in range(ff.shape[1]):
                     self.tableWidget.setItem(i,j, QTableWidgetItem(str(ff.iloc[i,j])))
             self.tableWidget.setColumnWidth(2, 300) 
-            self.label_4.setText("")   
-            self.mm = ff    
+            self.label_4.setText("")       
         elif Fi in ddd.unique():
             ff = df[ddd == Fi]
-            # ff.fillna('', inplace=True)
+            ff.fillna('', inplace=True)
             self.tableWidget.setRowCount(ff.shape[0])
             self.tableWidget.setColumnCount(ff.shape[1])
             self.tableWidget.setHorizontalHeaderLabels(df.columns)
@@ -398,33 +425,22 @@ class Ui_MainWindow(object):
                     self.tableWidget.setItem(i,j, QTableWidgetItem(str(ff.iloc[i,j])))
             self.tableWidget.setColumnWidth(2, 300)
             self.label_4.setText("")
-            self.mm = ff
         else:
             self.label_4.setText("Dữ liệu nhập chưa đúng so với mẫu hoặc không có dữ liệu này")
 
-    def LuaCot(self):
-        df = pd.read_excel(self.Ename, str(self.comboBox.currentText()))
-        #print(df)
-        column_names = df.columns.values.tolist()
-        print(column_names)
-        self.tableWidget.setRowCount(len(column_names)+1)
-        self.tableWidget.setColumnCount(3)
-        self.tableWidget.setItem(0,1,QTableWidgetItem("Tên cột"))
-        self.tableWidget.setItem(0,2,QTableWidgetItem("Thứ tự in lên"))
-        row = 1
-        # boxcheck = Ite
-        for val in column_names:
-            self.tableWidget.setItem(row,1,QtWidgets.QTableWidgetItem(val))
-            row = row +1
-        for row in range(len(column_names)+1):
-            chkBoxItem = QTableWidgetItem()
-            chkBoxItem.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-            chkBoxItem.setCheckState(Qt.CheckState.Unchecked)
-            self.tableWidget.setItem(row+1, 0, chkBoxItem)
-        # if boxcheck == Qt.CheckState.Checked:
-        #     self.tableWidget.setItem(row, column + 2,  1)
-        
-        self.tableWidget.setColumnWidth(2, 300)
+   
+    def GhiDuLieu(self):
+        LDL = self.gg
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setInformativeText("Thông tin đã được thêm vào thẻ")
+        msg.setWindowTitle("Thông báo")
+        retval = msg.exec_()
+
+        #print(LDL)
+
+        WriteC().WC(LDL[3],LDL[2],LDL[1])
 
 if __name__ == "__main__":
     import sys
